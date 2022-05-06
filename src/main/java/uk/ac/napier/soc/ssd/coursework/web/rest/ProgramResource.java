@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.napier.soc.ssd.coursework.domain.Course;
 import uk.ac.napier.soc.ssd.coursework.domain.Program;
 import uk.ac.napier.soc.ssd.coursework.repository.HibernateUtil;
 import uk.ac.napier.soc.ssd.coursework.repository.ProgramRepository;
@@ -142,9 +143,14 @@ public class ProgramResource
         log.debug("REST request to search Programs for query {}", query);
         Session session = HibernateUtil.getSession();
         //parametrised sql query
-        Query q = session.createQuery("select program from Program program where program.name like :name");
+//        Query q = session.createQuery("select program from Program program where program.name like :name");
+//        q.setParameter("name", query);
+//        return q.list();
+
+        Query<Program> q =(Query<Program>) session.createQuery("select program from Program program where program.name like :name");
         q.setParameter("name", query);
-        return q.list();
+        List<Program> results=q.getResultList();
+        return results;
     }
 
 }

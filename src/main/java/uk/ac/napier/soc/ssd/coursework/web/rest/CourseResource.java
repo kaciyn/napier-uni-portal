@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.TypedQuery;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -154,9 +155,12 @@ public class CourseResource
 
         Session session = HibernateUtil.getSession();
 //parametrised sql query
-        Query q = session.createQuery("select course from Course course where course.description like :description");
+        //the owasp libs have a higher version that deprecated the example, hopefully this works lol
+        //typed
+        Query<Course> q =(Query<Course>) session.createQuery("select course from Course course where course.description like :description");
         q.setParameter("description", query);
-        return q.list();
+        List<Course> results=q.getResultList();
+        return results;
 
     }
 

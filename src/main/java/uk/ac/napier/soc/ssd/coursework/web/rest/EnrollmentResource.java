@@ -171,9 +171,10 @@ public class EnrollmentResource
 
         Session session = HibernateUtil.getSession();
 //parametrised sql query
-        Query q = session.createQuery("select enrollment from Enrollment enrollment where enrollment.comments like :comment");
+        //cast not typed
+        org.hibernate.query.Query  q = (Query) session.createQuery("select enrollment from Enrollment enrollment where enrollment.comments like :comment");
         q.setParameter("comment",query);
-        return q.list();
+        return q.getResultList();
     }
 
 }
