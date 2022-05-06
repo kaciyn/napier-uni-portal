@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.expression.Expression;
 import org.springframework.stereotype.Component;
-import uk.ac.napier.soc.ssd.abac.security.policy.PolicyDefinition;
-import uk.ac.napier.soc.ssd.abac.security.policy.PolicyRule;
+import uk.ac.napier.soc.ssd.coursework.abac.security.policy.PolicyDefinition;
+import uk.ac.napier.soc.ssd.coursework.abac.security.policy.PolicyRule;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
