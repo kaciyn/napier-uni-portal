@@ -1,6 +1,7 @@
 package uk.ac.napier.soc.ssd.coursework.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import org.springframework.security.access.prepost.PreAuthorize;
 import uk.ac.napier.soc.ssd.coursework.domain.Program;
 import uk.ac.napier.soc.ssd.coursework.repository.ProgramRepository;
 import uk.ac.napier.soc.ssd.coursework.repository.search.ProgramSearchRepository;
@@ -53,6 +54,7 @@ public class ProgramResource {
      */
     @PostMapping("/programs")
     @Timed
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Program> createProgram(@Valid @RequestBody Program program) throws URISyntaxException {
         log.debug("REST request to save Program : {}", program);
         if (program.getId() != null) {
@@ -76,6 +78,7 @@ public class ProgramResource {
      */
     @PutMapping("/programs")
     @Timed
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Program> updateProgram(@Valid @RequestBody Program program) throws URISyntaxException {
         log.debug("REST request to update Program : {}", program);
         if (program.getId() == null) {
@@ -94,6 +97,7 @@ public class ProgramResource {
      */
     @GetMapping("/programs")
     @Timed
+
     public List<Program> getAllPrograms() {
         log.debug("REST request to get all Programs");
         return programRepository.findAll();
@@ -121,6 +125,7 @@ public class ProgramResource {
      */
     @DeleteMapping("/programs/{id}")
     @Timed
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteProgram(@PathVariable Long id) {
         log.debug("REST request to delete Program : {}", id);
 

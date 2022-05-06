@@ -3,7 +3,11 @@ package uk.ac.napier.soc.ssd.coursework.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.web.bind.WebDataBinder;
+import uk.ac.napier.soc.ssd.coursework.abac.security.spring.ContextAwarePolicyEnforcement;
 import uk.ac.napier.soc.ssd.coursework.domain.Course;
 import uk.ac.napier.soc.ssd.coursework.domain.validators.CourseValidator;
 import uk.ac.napier.soc.ssd.coursework.repository.CourseRepository;
@@ -35,6 +39,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
  */
 @RestController
 @RequestMapping("/api")
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class CourseResource {
 
     private final Logger log = LoggerFactory.getLogger(CourseResource.class);
@@ -45,6 +50,9 @@ public class CourseResource {
     private final CourseRepository courseRepository;
 
     private final CourseSearchRepository courseSearchRepository;
+
+    @Autowired
+    private ContextAwarePolicyEnforcement policy;
 
     @InitBinder
     protected void initBinder(WebDataBinder binder) {
@@ -66,7 +74,11 @@ public class CourseResource {
     @PostMapping("/courses")
     @Timed
     public ResponseEntity<Course> createCourse(@Valid @RequestBody Course course) throws URISyntaxException {
+        policy.checkPermission(course, "CREATE_COURSE");
+
         log.debug("REST request to save Course : {}", course);
+
+
         if (course.getId() != null) {
             throw new BadRequestAlertException("A new course cannot already have an ID", ENTITY_NAME, "idexists");
         }
@@ -89,6 +101,8 @@ public class CourseResource {
     @Timed
     public ResponseEntity<Course> updateCourse(@Valid @RequestBody Course course) throws URISyntaxException {
         log.debug("REST request to update Course : {}", course);
+        policy.checkPermission(course, "UPDATE_COURSE");
+
         if (course.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -108,6 +122,10 @@ public class CourseResource {
     @Timed
     public List<Course> getAllCourses(@RequestParam(required = false, defaultValue = "false") boolean eagerload) {
         log.debug("REST request to get all Courses");
+        //dirty but it wants a resource and there is none to give
+        policy.checkPermission(false, "GET_COURSES");
+
+
         return courseRepository.findAllWithEagerRelationships();
     }
 
@@ -121,6 +139,8 @@ public class CourseResource {
     @Timed
     public ResponseEntity<Course> getCourse(@PathVariable Long id) {
         log.debug("REST request to get Course : {}", id);
+        policy.checkPermission(id, "GET_COURSE");
+
         Optional<Course> course = courseRepository.findOneWithEagerRelationships(id);
         return ResponseUtil.wrapOrNotFound(course);
     }
@@ -133,8 +153,10 @@ public class CourseResource {
      */
     @DeleteMapping("/courses/{id}")
     @Timed
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteCourse(@PathVariable Long id) {
         log.debug("REST request to delete Course : {}", id);
+        policy.checkPermission(id, "DELETE_COURSE");
 
         courseRepository.deleteById(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
@@ -151,6 +173,7 @@ public class CourseResource {
     @Timed
     public List<Course> searchCourses(@RequestParam String query) {
         log.debug("REST request to search Courses for query {}", query);
+        policy.checkPermission(query, "SEARCH_COURSES");
 
 
         String queryStatement = "SELECT * FROM course WHERE description like '%" + query + "%'";
