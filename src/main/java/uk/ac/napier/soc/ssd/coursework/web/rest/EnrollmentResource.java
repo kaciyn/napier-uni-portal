@@ -3,6 +3,9 @@ package uk.ac.napier.soc.ssd.coursework.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+//import uk.ac.napier.soc.ssd.coursework.abac.security.spring.ContextAwarePolicyEnforcement;
 import uk.ac.napier.soc.ssd.coursework.domain.Enrollment;
 import uk.ac.napier.soc.ssd.coursework.repository.EnrollmentRepository;
 import uk.ac.napier.soc.ssd.coursework.repository.HibernateUtil;
@@ -30,7 +33,8 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
  */
 @RestController
 @RequestMapping("/api")
-public class EnrollmentResource {
+public class EnrollmentResource
+{
 
     private final Logger log = LoggerFactory.getLogger(EnrollmentResource.class);
 
@@ -39,6 +43,9 @@ public class EnrollmentResource {
     private final EnrollmentRepository enrollmentRepository;
 
     private final EnrollmentSearchRepository enrollmentSearchRepository;
+
+//    @Autowired
+//    private ContextAwarePolicyEnforcement policy;
 
     public EnrollmentResource(EnrollmentRepository enrollmentRepository, EnrollmentSearchRepository enrollmentSearchRepository) {
         this.enrollmentRepository = enrollmentRepository;
@@ -56,14 +63,19 @@ public class EnrollmentResource {
     @Timed
     public ResponseEntity<Enrollment> createEnrollment(@RequestBody Enrollment enrollment) throws URISyntaxException {
         log.debug("REST request to save Enrollment : {}", enrollment);
+
+        //access check
+//        policy.checkPermission(enrollment, "CREATE_ENROLMENT");
+
         if (enrollment.getId() != null) {
             throw new BadRequestAlertException("A new enrollment cannot already have an ID", ENTITY_NAME, "idexists");
         }
+
         Enrollment result = enrollmentRepository.save(enrollment);
 
         return ResponseEntity.created(new URI("/api/enrollments/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
-            .body(result);
+                             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
+                             .body(result);
     }
 
     /**
@@ -79,13 +91,17 @@ public class EnrollmentResource {
     @Timed
     public ResponseEntity<Enrollment> updateEnrollment(@RequestBody Enrollment enrollment) throws URISyntaxException {
         log.debug("REST request to update Enrollment : {}", enrollment);
+
+//        policy.checkPermission(enrollment, "UPDATE_ENROLMENT");
+
         if (enrollment.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         Enrollment result = enrollmentRepository.save(enrollment);
+
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, enrollment.getId().toString()))
-            .body(result);
+                             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, enrollment.getId().toString()))
+                             .body(result);
     }
 
     /**
@@ -98,6 +114,9 @@ public class EnrollmentResource {
     @Timed
     public List<Enrollment> getAllEnrollments(@RequestParam(required = false, defaultValue = "false") boolean eagerload) {
         log.debug("REST request to get all Enrollments");
+        //dirty but it wants a resource and there is none to give
+//        policy.checkPermission(false, "GET_ENROLMENTS");
+
         return enrollmentRepository.findAllWithEagerRelationships();
     }
 
@@ -111,7 +130,12 @@ public class EnrollmentResource {
     @Timed
     public ResponseEntity<Enrollment> getEnrollment(@PathVariable Long id) {
         log.debug("REST request to get Enrollment : {}", id);
+
         Optional<Enrollment> enrollment = enrollmentRepository.findOneWithEagerRelationships(id);
+
+        //access check
+//        policy.checkPermission(enrollment.get(), "GET_ENROLMENT");
+
         return ResponseUtil.wrapOrNotFound(enrollment);
     }
 
@@ -125,6 +149,7 @@ public class EnrollmentResource {
     @Timed
     public ResponseEntity<Void> deleteEnrollment(@PathVariable Long id) {
         log.debug("REST request to delete Enrollment : {}", id);
+//        policy.checkPermission(id, "DELETE_ENROLMENT");
 
         enrollmentRepository.deleteById(id);
         enrollmentSearchRepository.deleteById(id);
@@ -142,8 +167,12 @@ public class EnrollmentResource {
     @Timed
     public List<Enrollment> searchEnrollments(@RequestParam String query) {
         log.debug("REST request to search Enrollments for query {}", query);
+//        policy.checkPermission(query, "SEARCH_ENROLMENTS");
+
         Session session = HibernateUtil.getSession();
-        Query q = session.createQuery("select enrollment from Enrollment enrollment where enrollment.comments like '%" + query + "%'");
+//parametrised sql query
+        Query q = session.createQuery("select enrollment from Enrollment enrollment where enrollment.comments like :comment");
+        q.setParameter("comment",query);
         return q.list();
     }
 

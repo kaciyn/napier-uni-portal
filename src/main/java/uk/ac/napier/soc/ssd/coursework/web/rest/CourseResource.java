@@ -35,12 +35,12 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
  */
 @RestController
 @RequestMapping("/api")
-public class CourseResource {
+public class CourseResource
+{
 
     private final Logger log = LoggerFactory.getLogger(CourseResource.class);
 
     private static final String ENTITY_NAME = "course";
-
 
     private final CourseRepository courseRepository;
 
@@ -72,8 +72,8 @@ public class CourseResource {
         }
         Course result = courseRepository.save(course);
         return ResponseEntity.created(new URI("/api/courses/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
-            .body(result);
+                             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
+                             .body(result);
     }
 
     /**
@@ -94,8 +94,8 @@ public class CourseResource {
         }
         Course result = courseRepository.save(course);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, course.getId().toString()))
-            .body(result);
+                             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, course.getId().toString()))
+                             .body(result);
     }
 
     /**
@@ -152,28 +152,12 @@ public class CourseResource {
     public List<Course> searchCourses(@RequestParam String query) {
         log.debug("REST request to search Courses for query {}", query);
 
+        Session session = HibernateUtil.getSession();
+//parametrised sql query
+        Query q = session.createQuery("select course from Course course where course.description like :description");
+        q.setParameter("description", query);
+        return q.list();
 
-        String queryStatement = "SELECT * FROM course WHERE description like '%" + query + "%'";
-        log.info("Final SQL query {}", queryStatement);
-
-        ResultSet rs = null;
-
-        // TODO: use Hibernate language instead
-        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/NapierUniPortal", "root", "root"); Statement stmt = con.createStatement()) {
-            rs = stmt.executeQuery(queryStatement);
-            return extractCourse(rs);
-        } catch (SQLException ex) {
-            log.error(ex.getMessage(), ex);
-            return new ArrayList();
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException ex) {
-                log.error(ex.getMessage(), ex);
-            }
-        }
     }
 
     private List<Course> extractCourse(ResultSet rs) throws SQLException {

@@ -76,6 +76,7 @@ export class AuditsComponent implements OnInit, OnDestroy {
     }
 
     loadAll() {
+        //sql vuln
         this.auditsService
             .query({
                 page: this.page - 1,
