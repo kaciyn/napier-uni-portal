@@ -39,7 +39,8 @@ public class AsyncConfiguration implements AsyncConfigurer {
         return new ExceptionHandlingAsyncTaskExecutor(executor);
     }
 
-    @Override
+//    @Override
+    //truly don't know why this doesn't work anymore
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new SimpleAsyncUncaughtExceptionHandler();
     }
