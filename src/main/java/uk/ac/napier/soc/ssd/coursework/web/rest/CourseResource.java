@@ -157,7 +157,7 @@ public class CourseResource
 //parametrised sql query
         //the owasp libs have a higher version that deprecated the example, hopefully this works lol
         //typed
-        Query<Course> q =(Query<Course>) session.createQuery("select course from Course course where course.description like :description");
+        Query q = session.createQuery("select course from Course course where course.description like :description");
         q.setParameter("description", query);
         List<Course> results=q.getResultList();
         return results;
