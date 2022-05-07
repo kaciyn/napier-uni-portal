@@ -175,27 +175,12 @@ public class CourseResource {
         policy.checkPermission(query, "SEARCH_COURSES");
 
 
-        String queryStatement = "SELECT * FROM course WHERE description like '%" + query + "%'";
-        log.info("Final SQL query {}", queryStatement);
+        Session session = HibernateUtil.getSession();
+//parametrised sql query
+        Query q = session.createQuery("select course from Course course where course.description like :description");
+        q.setParameter("description", query);
+        return q.list();
 
-        ResultSet rs = null;
-
-        // TODO: use Hibernate language instead
-        try (Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/NapierUniPortal", "root", "root"); Statement stmt = con.createStatement()) {
-            rs = stmt.executeQuery(queryStatement);
-            return extractCourse(rs);
-        } catch (SQLException ex) {
-            log.error(ex.getMessage(), ex);
-            return new ArrayList();
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException ex) {
-                log.error(ex.getMessage(), ex);
-            }
-        }
     }
 
     private List<Course> extractCourse(ResultSet rs) throws SQLException {
