@@ -6,6 +6,9 @@ import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import uk.ac.napier.soc.ssd.coursework.abac.security.spring.ContextAwarePolicyEnforcement;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+//import uk.ac.napier.soc.ssd.coursework.abac.security.spring.ContextAwarePolicyEnforcement;
 import uk.ac.napier.soc.ssd.coursework.domain.Enrollment;
 import uk.ac.napier.soc.ssd.coursework.repository.EnrollmentRepository;
 import uk.ac.napier.soc.ssd.coursework.repository.HibernateUtil;
@@ -47,6 +50,9 @@ public class EnrollmentResource
     @Autowired
     private ContextAwarePolicyEnforcement policy;
 
+//    @Autowired
+//    private ContextAwarePolicyEnforcement policy;
+
     public EnrollmentResource(EnrollmentRepository enrollmentRepository, EnrollmentSearchRepository enrollmentSearchRepository) {
         this.enrollmentRepository = enrollmentRepository;
         this.enrollmentSearchRepository = enrollmentSearchRepository;
@@ -61,10 +67,13 @@ public class EnrollmentResource
      */
     @PostMapping("/enrollments")
     @Timed
-
     public ResponseEntity<Enrollment> createEnrollment(@RequestBody Enrollment enrollment) throws URISyntaxException {
         log.debug("REST request to save Enrollment : {}", enrollment);
         policy.checkPermission(enrollment, "CREATE_ENROLMENT");
+
+
+        //access check
+//        policy.checkPermission(enrollment, "CREATE_ENROLMENT");
 
         if (enrollment.getId() != null) {
             throw new BadRequestAlertException("A new enrollment cannot already have an ID", ENTITY_NAME, "idexists");
@@ -92,6 +101,9 @@ public class EnrollmentResource
         log.debug("REST request to update Enrollment : {}", enrollment);
         policy.checkPermission(enrollment, "UPDATE_ENROLMENT");
 
+
+//        policy.checkPermission(enrollment, "UPDATE_ENROLMENT");
+
         if (enrollment.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -115,6 +127,9 @@ public class EnrollmentResource
         //dirty but it wants a resource and there is none to give
         policy.checkPermission(false, "GET_ENROLMENTS");
 
+        //dirty but it wants a resource and there is none to give
+//        policy.checkPermission(false, "GET_ENROLMENTS");
+
         return enrollmentRepository.findAllWithEagerRelationships();
     }
 
@@ -130,8 +145,12 @@ public class EnrollmentResource
         log.debug("REST request to get Enrollment : {}", id);
         policy.checkPermission(id, "GET_ENROLMENT");
 
+
         Optional<Enrollment> enrollment = enrollmentRepository.findOneWithEagerRelationships(id);
 
+
+        //access check
+//        policy.checkPermission(enrollment.get(), "GET_ENROLMENT");
 
         return ResponseUtil.wrapOrNotFound(enrollment);
     }
@@ -147,6 +166,7 @@ public class EnrollmentResource
     public ResponseEntity<Void> deleteEnrollment(@PathVariable Long id) {
         log.debug("REST request to delete Enrollment : {}", id);
         policy.checkPermission(id, "DELETE_ENROLMENT");
+//        policy.checkPermission(id, "DELETE_ENROLMENT");
 
         enrollmentRepository.deleteById(id);
         enrollmentSearchRepository.deleteById(id);
@@ -166,9 +186,14 @@ public class EnrollmentResource
         log.debug("REST request to search Enrollments for query {}", query);
         policy.checkPermission(query, "SEARCH_ENROLMENTS");
 
+//        policy.checkPermission(query, "SEARCH_ENROLMENTS");
+
         Session session = HibernateUtil.getSession();
-        Query q = session.createQuery("select enrollment from Enrollment enrollment where enrollment.comments like '%" + query + "%'");
-        return q.list();
+//parametrised sql query
+        //cast not typed
+        org.hibernate.query.Query  q = (Query) session.createQuery("select enrollment from Enrollment enrollment where enrollment.comments like :comment");
+        q.setParameter("comment",query);
+        return q.getResultList();
     }
 
 }

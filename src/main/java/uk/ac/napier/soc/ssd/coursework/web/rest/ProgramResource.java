@@ -8,10 +8,19 @@ import uk.ac.napier.soc.ssd.coursework.repository.search.ProgramSearchRepository
 import uk.ac.napier.soc.ssd.coursework.web.rest.errors.BadRequestAlertException;
 import uk.ac.napier.soc.ssd.coursework.web.rest.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uk.ac.napier.soc.ssd.coursework.domain.Course;
+import uk.ac.napier.soc.ssd.coursework.domain.Program;
+import uk.ac.napier.soc.ssd.coursework.repository.HibernateUtil;
+import uk.ac.napier.soc.ssd.coursework.repository.ProgramRepository;
+import uk.ac.napier.soc.ssd.coursework.repository.search.ProgramSearchRepository;
+import uk.ac.napier.soc.ssd.coursework.web.rest.errors.BadRequestAlertException;
+import uk.ac.napier.soc.ssd.coursework.web.rest.util.HeaderUtil;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -23,7 +32,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static org.elasticsearch.index.query.QueryBuilders.*;
+//import uk.ac.napier.soc.ssd.coursework.abac.security.spring.ContextAwarePolicyEnforcement;
 
 /**
  * REST controller for managing Program.
@@ -63,8 +72,8 @@ public class ProgramResource {
         Program result = programRepository.save(program);
 
         return ResponseEntity.created(new URI("/api/programs/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
-            .body(result);
+                             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
+                             .body(result);
     }
 
     /**
@@ -86,8 +95,8 @@ public class ProgramResource {
         }
         Program result = programRepository.save(program);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, program.getId().toString()))
-            .body(result);
+                             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, program.getId().toString()))
+                             .body(result);
     }
 
     /**
@@ -97,7 +106,6 @@ public class ProgramResource {
      */
     @GetMapping("/programs")
     @Timed
-
     public List<Program> getAllPrograms() {
         log.debug("REST request to get all Programs");
         return programRepository.findAll();
@@ -145,8 +153,16 @@ public class ProgramResource {
     @Timed
     public List<Program> searchPrograms(@RequestParam String query) {
         log.debug("REST request to search Programs for query {}", query);
-        // TODO: Implement the search functionality
-        return new ArrayList();
+        Session session = HibernateUtil.getSession();
+        //parametrised sql query
+//        Query q = session.createQuery("select program from Program program where program.name like :name");
+//        q.setParameter("name", query);
+//        return q.list();
+
+        Query<Program> q =(Query<Program>) session.createQuery("select program from Program program where program.name like :name");
+        q.setParameter("name", query);
+        List<Program> results=q.getResultList();
+        return results;
     }
 
 }
