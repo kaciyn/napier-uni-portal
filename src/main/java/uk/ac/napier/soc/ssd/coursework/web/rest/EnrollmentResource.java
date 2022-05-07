@@ -127,10 +127,10 @@ public class EnrollmentResource
         //dirty but it wants a resource and there is none to give
         policy.checkPermission(false, "GET_ENROLMENTS");
 
-        //dirty but it wants a resource and there is none to give
-//        policy.checkPermission(false, "GET_ENROLMENTS");
+        List<Enrollment> enrollments=enrollmentRepository.findAllWithEagerRelationships();
 
-        return enrollmentRepository.findAllWithEagerRelationships();
+//        if(enrollments.)
+        return enrollments;
     }
 
     /**
