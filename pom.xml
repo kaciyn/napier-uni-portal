@@ -29,8 +29,8 @@
         <m2e.apt.activation>jdt_apt</m2e.apt.activation>
         <run.addResources>false</run.addResources>
         <!-- These remain empty unless the corresponding profile is active -->
-        <profile.no-liquibase />
-        <profile.swagger />
+        <profile.no-liquibase/>
+        <profile.swagger/>
 
         <!-- Dependency versions -->
         <jhipster-dependencies.version>2.0.14</jhipster-dependencies.version>
@@ -87,7 +87,7 @@
         <!-- jhipster-needle-maven-property -->
 
         <appsensor.version>2.3.2</appsensor.version>
-        <jersey-version>2.8</jersey-version>
+        <jersey-version>2.35</jersey-version>
     </properties>
 
     <dependencyManagement>
@@ -711,7 +711,7 @@
                     <url>jdbc:mysql://localhost:3306/NapierUniPortal</url>
                     <defaultSchemaName>NapierUniPortal</defaultSchemaName>
                     <username>root</username>
-                    <password></password>
+                    <password/>
                     <referenceUrl>hibernate:spring:uk.ac.napier.soc.ssd.coursework.domain?dialect=org.hibernate.dialect.MySQL5InnoDBDialect&amp;hibernate.physical_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy&amp;hibernate.implicit_naming_strategy=org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy</referenceUrl>
                     <verbose>true</verbose>
                     <logging>debug</logging>
