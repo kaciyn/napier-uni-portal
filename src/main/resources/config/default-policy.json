@@ -8,7 +8,7 @@
     {
         "name": "User",
         "description": "Users can view programmes.",
-        "target": "subject.authorities.![authority].contains('ROLE_USER') && action == 'GET_PROGRAMS'",
+        "target": "subject.authorities.![authority].contains('ROLE_USER') && action == 'GET_PROGRAM'",
         "condition": "subject.username == resource.user.login"
     },
     {

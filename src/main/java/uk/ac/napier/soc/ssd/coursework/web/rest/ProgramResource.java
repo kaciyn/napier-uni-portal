@@ -1,6 +1,7 @@
 package uk.ac.napier.soc.ssd.coursework.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import uk.ac.napier.soc.ssd.coursework.domain.Program;
 import uk.ac.napier.soc.ssd.coursework.repository.ProgramRepository;
@@ -32,14 +33,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-//import uk.ac.napier.soc.ssd.coursework.abac.security.spring.ContextAwarePolicyEnforcement;
+import uk.ac.napier.soc.ssd.coursework.abac.security.spring.ContextAwarePolicyEnforcement;
 
 /**
  * REST controller for managing Program.
  */
 @RestController
 @RequestMapping("/api")
-public class ProgramResource {
+public class ProgramResource
+{
 
     private final Logger log = LoggerFactory.getLogger(ProgramResource.class);
 
@@ -48,6 +50,8 @@ public class ProgramResource {
     private final ProgramRepository programRepository;
 
     private final ProgramSearchRepository programSearchRepository;
+    @Autowired
+    private ContextAwarePolicyEnforcement policy;
 
     public ProgramResource(ProgramRepository programRepository, ProgramSearchRepository programSearchRepository) {
         this.programRepository = programRepository;
@@ -63,12 +67,13 @@ public class ProgramResource {
      */
     @PostMapping("/programs")
     @Timed
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Program> createProgram(@Valid @RequestBody Program program) throws URISyntaxException {
         log.debug("REST request to save Program : {}", program);
         if (program.getId() != null) {
             throw new BadRequestAlertException("A new program cannot already have an ID", ENTITY_NAME, "idexists");
         }
+        policy.checkPermission(program, "CREATE_PROGRAM");
+
         Program result = programRepository.save(program);
 
         return ResponseEntity.created(new URI("/api/programs/" + result.getId()))
@@ -93,6 +98,8 @@ public class ProgramResource {
         if (program.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
+        policy.checkPermission(program, "SAVE_PROGRAM");
+
         Program result = programRepository.save(program);
         return ResponseEntity.ok()
                              .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, program.getId().toString()))
@@ -108,6 +115,8 @@ public class ProgramResource {
     @Timed
     public List<Program> getAllPrograms() {
         log.debug("REST request to get all Programs");
+        policy.checkPermission(false, "GET_PROGRAM");
+
         return programRepository.findAll();
     }
 
@@ -121,6 +130,8 @@ public class ProgramResource {
     @Timed
     public ResponseEntity<Program> getProgram(@PathVariable Long id) {
         log.debug("REST request to get Program : {}", id);
+        policy.checkPermission(id, "GET_PROGRAM");
+
         Optional<Program> program = programRepository.findById(id);
         return ResponseUtil.wrapOrNotFound(program);
     }
@@ -136,6 +147,7 @@ public class ProgramResource {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> deleteProgram(@PathVariable Long id) {
         log.debug("REST request to delete Program : {}", id);
+        policy.checkPermission(id, "DELETE_PROGRAM");
 
         programRepository.deleteById(id);
         programSearchRepository.deleteById(id);
@@ -153,16 +165,18 @@ public class ProgramResource {
     @Timed
     public List<Program> searchPrograms(@RequestParam String query) {
         log.debug("REST request to search Programs for query {}", query);
-        Session session = HibernateUtil.getSession();
-        //parametrised sql query
-//        Query q = session.createQuery("select program from Program program where program.name like :name");
-//        q.setParameter("name", query);
-//        return q.list();
+        policy.checkPermission(query, "GET_PROGRAM");
 
-        Query<Program> q =(Query<Program>) session.createQuery("select program from Program program where program.name like :name");
+        Session session = HibernateUtil.getSession();
+//        parametrised sql query
+        Query q = session.createQuery("select program from Program program where program.name like :name");
         q.setParameter("name", query);
-        List<Program> results=q.getResultList();
-        return results;
+        return q.list();
+
+//        Query<Program> q = (Query<Program>) session.createQuery("select program from Program program where program.name like :name");
+//        q.setParameter("name", query);
+//        List<Program> results = q.getResultList();
+//        return results;
     }
 
 }
