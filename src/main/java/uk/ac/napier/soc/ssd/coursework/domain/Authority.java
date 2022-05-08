@@ -9,6 +9,7 @@ import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.text.MessageFormat;
 
 /**
  * An authority (a security role) used by Spring Security.
@@ -55,8 +56,6 @@ public class Authority implements Serializable {
 
     @Override
     public String toString() {
-        return "Authority{" +
-            "name='" + name + '\'' +
-            "}";
+        return MessageFormat.format("Authority'{'name=''{0}'''}'", name);
     }
 }

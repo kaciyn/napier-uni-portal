@@ -1,15 +1,25 @@
 package uk.ac.napier.soc.ssd.coursework.web.rest;
 
+import org.owasp.appsensor.core.*;
+
 import com.codahale.metrics.annotation.Timed;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.owasp.appsensor.core.DetectionPoint;
+import org.owasp.appsensor.core.Event;
+import org.owasp.appsensor.core.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.Errors;
 import uk.ac.napier.soc.ssd.coursework.abac.security.spring.ContextAwarePolicyEnforcement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 //import uk.ac.napier.soc.ssd.coursework.abac.security.spring.ContextAwarePolicyEnforcement;
 import uk.ac.napier.soc.ssd.coursework.domain.Enrollment;
+import uk.ac.napier.soc.ssd.coursework.domain.validators.RestEventManager;
 import uk.ac.napier.soc.ssd.coursework.repository.EnrollmentRepository;
 import uk.ac.napier.soc.ssd.coursework.repository.HibernateUtil;
 import uk.ac.napier.soc.ssd.coursework.repository.search.EnrollmentSearchRepository;
@@ -50,9 +60,6 @@ public class EnrollmentResource
     @Autowired
     private ContextAwarePolicyEnforcement policy;
 
-//    @Autowired
-//    private ContextAwarePolicyEnforcement policy;
-
     public EnrollmentResource(EnrollmentRepository enrollmentRepository, EnrollmentSearchRepository enrollmentSearchRepository) {
         this.enrollmentRepository = enrollmentRepository;
         this.enrollmentSearchRepository = enrollmentSearchRepository;
@@ -69,11 +76,9 @@ public class EnrollmentResource
     @Timed
     public ResponseEntity<Enrollment> createEnrollment(@RequestBody Enrollment enrollment) throws URISyntaxException {
         log.debug("REST request to save Enrollment : {}", enrollment);
-        policy.checkPermission(enrollment, "CREATE_ENROLMENT");
-
 
         //access check
-//        policy.checkPermission(enrollment, "CREATE_ENROLMENT");
+        policy.checkPermission(enrollment, "CREATE_ENROLMENT");
 
         if (enrollment.getId() != null) {
             throw new BadRequestAlertException("A new enrollment cannot already have an ID", ENTITY_NAME, "idexists");
@@ -101,9 +106,6 @@ public class EnrollmentResource
         log.debug("REST request to update Enrollment : {}", enrollment);
         policy.checkPermission(enrollment, "UPDATE_ENROLMENT");
 
-
-//        policy.checkPermission(enrollment, "UPDATE_ENROLMENT");
-
         if (enrollment.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
@@ -127,9 +129,8 @@ public class EnrollmentResource
         //dirty but it wants a resource and there is none to give
         policy.checkPermission(false, "GET_ENROLMENTS");
 
-        List<Enrollment> enrollments=enrollmentRepository.findAllWithEagerRelationships();
+        List<Enrollment> enrollments = enrollmentRepository.findAllWithEagerRelationships();
 
-//        if(enrollments.)
         return enrollments;
     }
 
@@ -143,14 +144,11 @@ public class EnrollmentResource
     @Timed
     public ResponseEntity<Enrollment> getEnrollment(@PathVariable Long id) {
         log.debug("REST request to get Enrollment : {}", id);
-        policy.checkPermission(id, "GET_ENROLMENT");
-
 
         Optional<Enrollment> enrollment = enrollmentRepository.findOneWithEagerRelationships(id);
 
-
         //access check
-//        policy.checkPermission(enrollment.get(), "GET_ENROLMENT");
+        policy.checkPermission(enrollment.get(), "GET_ENROLMENT");
 
         return ResponseUtil.wrapOrNotFound(enrollment);
     }
@@ -166,7 +164,6 @@ public class EnrollmentResource
     public ResponseEntity<Void> deleteEnrollment(@PathVariable Long id) {
         log.debug("REST request to delete Enrollment : {}", id);
         policy.checkPermission(id, "DELETE_ENROLMENT");
-//        policy.checkPermission(id, "DELETE_ENROLMENT");
 
         enrollmentRepository.deleteById(id);
         enrollmentSearchRepository.deleteById(id);
@@ -186,14 +183,54 @@ public class EnrollmentResource
         log.debug("REST request to search Enrollments for query {}", query);
         policy.checkPermission(query, "SEARCH_ENROLMENTS");
 
-//        policy.checkPermission(query, "SEARCH_ENROLMENTS");
-
         Session session = HibernateUtil.getSession();
-//parametrised sql query
-        //cast not typed
-        org.hibernate.query.Query  q = (Query) session.createQuery("select enrollment from Enrollment enrollment where enrollment.comments like :comment");
-        q.setParameter("comment",query);
+        Query q = session.createQuery("select enrollment from Enrollment enrollment where enrollment.comments like :comment");
+        q.setParameter("comment", query);
+
+        List<Enrollment> enrollments = q.getResultList();
+
         return q.getResultList();
     }
 
+    public void validate(Object target, Errors errors) {
+
+        List<Enrollment> enrollments = (List<Enrollment>) target;
+
+        //proof of concept, 500 would be an awful lot of enrolments but then again these are meant to be edge cases
+//        if (enrollments != null && enrollments.size() > 500) {
+        //for testing
+        if (true) {
+            signalSQLInjectionOverread();
+            errors.rejectValue("enrollments.size()", "sqlInjection.attempt", "You tried fetching too much data! You stop that.!");
+        }
+
+    }
+
+    private RestEventManager eventManager;
+
+    private void signalSQLInjectionOverread() {
+        User user = new User(getUserName());
+
+        DetectionPoint detectionPoint = new DetectionPoint(DetectionPoint.Category.INPUT_VALIDATION, "CIE3");
+        eventManager = new RestEventManager();
+        eventManager.addEvent(new Event(user, detectionPoint, getDetectionSystem()));
+    }
+
+    private String getUserName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userName = authentication.getName();
+
+        // overwrite if we can be more specific
+        if (authentication instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication;
+
+            userName = userDetails.getUsername();
+        }
+
+        return userName;
+    }
+
+    private DetectionSystem getDetectionSystem() {
+        return new DetectionSystem("myclientapp");
+    }
 }

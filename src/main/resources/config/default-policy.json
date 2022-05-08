@@ -15,6 +15,6 @@
         "name": "User",
         "description": "Users can view  own enrolments.",
         "target": "subject.authorities.![authority].contains('ROLE_USER') && action == 'GET_ENROLMENT' ",
-        "condition": "subject.username == resource"
+        "condition": "subject.username == resource.user.username"
     }
 ]

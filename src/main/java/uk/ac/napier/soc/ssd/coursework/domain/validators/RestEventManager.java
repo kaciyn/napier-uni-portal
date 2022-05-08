@@ -1,5 +1,6 @@
 package uk.ac.napier.soc.ssd.coursework.domain.validators;
 
+import org.owasp.appsensor.core.AppSensorClient;
 import java.util.Collection;
 
 import javax.annotation.PostConstruct;
@@ -11,7 +12,6 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 
-//import org.owasp.appsensor.core.AppSensorClient;
 import org.owasp.appsensor.core.Attack;
 import org.owasp.appsensor.core.Event;
 import org.owasp.appsensor.core.Response;
@@ -36,7 +36,7 @@ public class RestEventManager implements EventManager {
     private String clientApplicationIdValue;
 
     public RestEventManager() {
-        //initializeData();
+        initializeData();
     }
 
     /**

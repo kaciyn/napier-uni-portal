@@ -9,6 +9,7 @@ import javax.validation.constraints.*;
 
 import org.springframework.data.elasticsearch.annotations.Document;
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Objects;
@@ -32,7 +33,7 @@ public class Course implements Serializable {
     @Column(name = "title", nullable = false)
     private String title;
 
-    
+
     @Lob
     @Column(name = "description", nullable = false)
     private String description;
@@ -157,10 +158,6 @@ public class Course implements Serializable {
 
     @Override
     public String toString() {
-        return "Course{" +
-            "id=" + getId() +
-            ", title='" + getTitle() + "'" +
-            ", description='" + getDescription() + "'" +
-            "}";
+        return MessageFormat.format("Course'{'id={0}, title=''{1}'', description=''{2}'''}'", getId(), getTitle(), getDescription());
     }
 }

@@ -11,9 +11,9 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.SpringValidatorAdapter;
 import uk.ac.napier.soc.ssd.coursework.domain.Course;
+import uk.ac.napier.soc.ssd.coursework.domain.Enrollment;
 
-
-public class CourseValidator implements Validator {
+public class EnrollmentValidator implements Validator {
 
     private SpringValidatorAdapter validator;
 
@@ -25,19 +25,18 @@ public class CourseValidator implements Validator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return Course.class.equals(clazz);
+        return Enrollment.class.equals(clazz);
     }
 
     @Override
     public void validate(Object target, Errors errors) {
 
-        Course course = (Course) target;
+        Enrollment enrollment = (Enrollment) target;
 
-        if (course.getDescription() != null && course.getDescription().contains("<script>")) {
+        if (enrollment.getComments() != null && enrollment.getComments().contains("<script>")) {
             signalXss();
-            errors.rejectValue("description", "xss.attempt", "You tried XSS - stop!");
+            errors.rejectValue("comments", "xss.attempt", "You tried XSS - stop!");
         }
-
 
     }
 
@@ -48,6 +47,7 @@ public class CourseValidator implements Validator {
         eventManager = new RestEventManager();
         eventManager.addEvent(new Event(user, detectionPoint, getDetectionSystem()));
     }
+
 
 
     private String getUserName() {
