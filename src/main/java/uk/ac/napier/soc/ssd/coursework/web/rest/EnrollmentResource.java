@@ -206,14 +206,14 @@ public class EnrollmentResource
 
     }
 
-    private RestEventManager eventManager;
+//    private RestEventManager eventManager;
 
     private void signalSQLInjectionOverread() {
         User user = new User(getUserName());
 
         DetectionPoint detectionPoint = new DetectionPoint(DetectionPoint.Category.INPUT_VALIDATION, "CIE3");
-        eventManager = new RestEventManager();
-        eventManager.addEvent(new Event(user, detectionPoint, getDetectionSystem()));
+//        eventManager = new RestEventManager();
+//        eventManager.addEvent(new Event(user, detectionPoint, getDetectionSystem()));
     }
 
     private String getUserName() {

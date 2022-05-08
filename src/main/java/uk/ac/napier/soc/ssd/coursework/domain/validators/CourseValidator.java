@@ -21,7 +21,7 @@ public class CourseValidator implements Validator {
     private javax.validation.Validator jsr303Validator;
 
     //@Autowired
-    private RestEventManager eventManager;
+//    private RestEventManager eventManager;
 
     @Override
     public boolean supports(Class<?> clazz) {
@@ -45,8 +45,8 @@ public class CourseValidator implements Validator {
         User user = new User(getUserName());
         // AE3: High Rate of Login Attempts
         DetectionPoint detectionPoint = new DetectionPoint(DetectionPoint.Category.INPUT_VALIDATION, "IE1");
-        eventManager = new RestEventManager();
-        eventManager.addEvent(new Event(user, detectionPoint, getDetectionSystem()));
+//        eventManager = new RestEventManager();
+//        eventManager.addEvent(new Event(user, detectionPoint, getDetectionSystem()));
     }
 
 
