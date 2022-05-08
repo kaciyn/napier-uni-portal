@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 //import uk.ac.napier.soc.ssd.coursework.abac.security.spring.ContextAwarePolicyEnforcement;
 import uk.ac.napier.soc.ssd.coursework.domain.Enrollment;
-import uk.ac.napier.soc.ssd.coursework.domain.validators.RestEventManager;
+//import uk.ac.napier.soc.ssd.coursework.domain.validators.RestEventManager;
 import uk.ac.napier.soc.ssd.coursework.repository.EnrollmentRepository;
 import uk.ac.napier.soc.ssd.coursework.repository.HibernateUtil;
 import uk.ac.napier.soc.ssd.coursework.repository.search.EnrollmentSearchRepository;
