@@ -42,11 +42,12 @@
     symbol-observable "^1.2.0"
     yargs-parser "^10.0.0"
 
-"@angular/common@6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@angular/common/-/common-6.0.0.tgz#ca3b6b6b96837fe048861da897c31991aa04954f"
+"@angular/common@19.2.16":
+  version "19.2.16"
+  resolved "https://registry.yarnpkg.com/@angular/common/-/common-19.2.16.tgz#2ce9c21b7f2181e6d6ab85c346ad6280ef83e23b"
+  integrity sha512-sugztO7XIiLRoVjn0WJK9ooBm9zejsqlE5k4ZGvy1zFafM8LMjFHwD4KymN8JB3AOb7Ad4lJHVq1IvwWnpqeWw==
   dependencies:
-    tslib "^1.9.0"
+    tslib "^2.3.0"
 
 "@angular/compiler-cli@6.0.0":
   version "6.0.0"
@@ -57,11 +58,12 @@
     reflect-metadata "^0.1.2"
     tsickle "^0.27.2"
 
-"@angular/compiler@6.0.0":
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/@angular/compiler/-/compiler-6.0.0.tgz#9092a0f02f33dd1108276ab93cc48142e36a1e95"
+"@angular/compiler@19.2.17":
+  version "19.2.17"
+  resolved "https://registry.yarnpkg.com/@angular/compiler/-/compiler-19.2.17.tgz#e74a321e2d20f52bbd809498e4a810028e16020f"
+  integrity sha512-qo8psYASAlDiQ8fAL8i/E2JfWH2nPTpZDKKZxSWvgBVA8o+zUEjYAJu6/k6btnu+4Qcb425T0rmM/zao6EU9Aw==
   dependencies:
-    tslib "^1.9.0"
+    tslib "^2.3.0"
 
 "@angular/core@11.0.5":
   version "11.0.5"
